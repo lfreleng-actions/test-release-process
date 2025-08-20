@@ -2,70 +2,46 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2025 The Linux Foundation
 
-# Validates pushed tags, promotes draft release
-name: 'Release Process Test 🚀'
+# Runs on tag push, promotes draft release
+name: 'Release on Tag Push 🚀'
 
 # yamllint disable-line rule:truthy
 on:
   push:
     tags:
-      # No tag restrictions; permit both SemVer/CalVer
       - '**'
 
 permissions: {}
 
 jobs:
-  update-release:
-    name: 'Update Draft Release'
-    permissions:
-      # write permission is required to create releases
-      contents: write
-      # write permission is required for autolabeler
-      pull-requests: write
-    runs-on: 'ubuntu-latest'
-    timeout-minutes: 5
-    steps:
-      - name: 'Harden runner 🔒'
-        # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          egress-policy: audit
-
-      - name: 'Update Draft Release'
-        # yamllint disable-line rule:line-length
-        uses: release-drafter/release-drafter@b1476f6e6eb133afa41ed8589daba6dc69b4d3f5 # v6.1.0
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-
-  check-trigger:
-    name: 'Release Process Test'
-    needs: update-release
+  promote-release:
+    name: 'Promote Draft Release'
+    # yamllint disable-line rule:line-length
+    if: github.ref_type == 'tag'
     runs-on: 'ubuntu-latest'
     permissions:
       contents: write
-    timeout-minutes: 5
+    timeout-minutes: 3
     steps:
-      - name: 'Harden runner 🔒'
-        # yamllint disable-line rule:line-length
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+      # Harden the runner used by this workflow
+      # yamllint disable-line rule:line-length
+      - uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911  # v2.13.0
         with:
           egress-policy: audit
 
       # yamllint disable-line rule:line-length
-      - name: 'Checkout local repository ☑️'
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: 'Verify pushed tag 🏷️'
-        id: tag-verify
+      - name: 'Verify Pushed Tag'
         # yamllint disable-line rule:line-length
-        uses: lfreleng-actions/tag-push-verify-action@80e2bdbbb9ee7b67557a31705892b75e75d2859e # v0.1.1
+        uses: lfreleng-actions/tag-push-verify-action@80e2bdbbb9ee7b67557a31705892b75e75d2859e  # v0.1.1
         with:
           versioning: 'semver'
-          exit_on_fail: true
 
-      - name: 'Promote draft release ⬆️'
+      - name: 'Promote draft release'
         # yamllint disable-line rule:line-length
-        uses: lfreleng-actions/draft-release-promote-action@d7e7df12e32fa26b28dbc2f18a12766482785399 # v0.1.2
+        uses: lfreleng-actions/draft-release-promote-action@d7e7df12e32fa26b28dbc2f18a12766482785399  # v0.1.2
         with:
           token: "${{ secrets.GITHUB_TOKEN }}"
-          tag: "${{ steps.tag-verify.outputs.tag }}"
+          tag: "${{ github.ref_name }}"
+          latest: true
