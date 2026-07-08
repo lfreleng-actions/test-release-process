@@ -13,17 +13,18 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
 jobs:
   generate-pr:
     name: 'Generate Pull Request ⬇️'
     runs-on: 'ubuntu-24.04'
     permissions:
-      # Needed to add/update a file in the repository
-      contents: write
-      # Needed to raise the pull request
-      pull-requests: write
-      # Needed to create pull request labels
-      issues: write
+      contents: write  # Add/update a file in the repository
+      pull-requests: write  # Raise the pull request
+      issues: write  # Create pull request labels
 
     timeout-minutes: 5
     steps:
@@ -36,6 +37,8 @@ jobs:
       # yamllint disable-line rule:line-length
       - name: 'Checkout local repository ☑️'
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: 'List existing pull requests 📋'
         env:
