@@ -27,6 +27,12 @@ jobs:
       issues: write  # Create pull request labels
 
     timeout-minutes: 5
+    # Dedicated environment scopes secret access (zizmor: secrets-outside-env)
+    environment: 'automation'
+    env:
+      # Step-level 'if' cannot access the secrets context; expose presence
+      # of the bot private key as a boolean via job-level env instead
+      BOT_KEY_PRESENT: "${{ secrets.LF_RELENG_BOT_PRIVATE_KEY != '' }}"
     steps:
       - name: 'Harden runner 🔒'
         # yamllint disable-line rule:line-length
@@ -40,9 +46,28 @@ jobs:
         with:
           persist-credentials: false
 
+      # Mint a short-lived GitHub App token when app credentials are
+      # configured. Required because organisations that harden Actions block
+      # the default GITHUB_TOKEN from creating pull requests.
+      - name: 'Generate GitHub App token 🔑'
+        id: app-token
+        # yamllint disable-line rule:line-length
+        if: vars.LF_RELENG_BOT_APP_ID != '' && env.BOT_KEY_PRESENT == 'true'
+        # yamllint disable-line rule:line-length
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: "${{ vars.LF_RELENG_BOT_APP_ID }}"
+          private-key: "${{ secrets.LF_RELENG_BOT_PRIVATE_KEY }}"
+          # Scope the token to the permissions this workflow needs; without
+          # this the token inherits the App's blanket installation permissions
+          permission-contents: 'write'
+          permission-pull-requests: 'write'
+          permission-issues: 'write'
+
       - name: 'List existing pull requests 📋'
         env:
-          GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          # yamllint disable-line rule:line-length
+          GH_TOKEN: "${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}"
         run: |
           # List pull requests with label/search
           requests=$(gh pr list -l 'automated pr')
@@ -54,4 +79,5 @@ jobs:
       - name: "Running local action: ${{ github.repository }} 🔨"
         uses: ./
         with:
-          token: "${{ secrets.GITHUB_TOKEN }}"
+          # yamllint disable-line rule:line-length
+          token: "${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}"
