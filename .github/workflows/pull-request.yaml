@@ -52,11 +52,11 @@ jobs:
       - name: 'Generate GitHub App token 🔑'
         id: app-token
         # yamllint disable-line rule:line-length
-        if: vars.LF_RELENG_BOT_APP_ID != '' && env.BOT_KEY_PRESENT == 'true'
+        if: vars.LF_RELENG_BOT_CLIENT_ID != '' && env.BOT_KEY_PRESENT == 'true'
         # yamllint disable-line rule:line-length
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: "${{ vars.LF_RELENG_BOT_APP_ID }}"
+          client-id: "${{ vars.LF_RELENG_BOT_CLIENT_ID }}"
           private-key: "${{ secrets.LF_RELENG_BOT_PRIVATE_KEY }}"
           # Scope the token to the permissions this workflow needs; without
           # this the token inherits the App's blanket installation permissions

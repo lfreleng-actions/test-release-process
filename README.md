@@ -72,13 +72,13 @@ organisation) configuration:
 
 | Kind     | Name                        | Description                  |
 | -------- | --------------------------- | ---------------------------- |
-| Variable | `LF_RELENG_BOT_APP_ID`      | GitHub App ID                |
+| Variable | `LF_RELENG_BOT_CLIENT_ID`   | GitHub App client ID         |
 | Secret   | `LF_RELENG_BOT_PRIVATE_KEY` | GitHub App private key (PEM) |
 
 The GitHub App needs `contents: write`, `pull-requests: write`, and
 `issues: write` repository permissions (the latter creates the
 `automated pr` label). Install the App on this repository. Without
-`LF_RELENG_BOT_APP_ID`, the workflow falls back to `GITHUB_TOKEN`, which
+`LF_RELENG_BOT_CLIENT_ID`, the workflow falls back to `GITHUB_TOKEN`, which
 works where the organisation permits Actions to create pull requests.
 
 [tag-validate]: https://github.com/lfreleng-actions/tag-validate-action
