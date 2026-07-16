@@ -27,6 +27,8 @@ jobs:
       issues: write  # Create pull request labels
 
     timeout-minutes: 5
+    # Dedicated environment scopes secret access (zizmor: secrets-outside-env)
+    environment: 'automation'
     env:
       # Step-level 'if' cannot access the secrets context; expose presence
       # of the bot private key as a boolean via job-level env instead
@@ -56,6 +58,11 @@ jobs:
         with:
           app-id: "${{ vars.LF_RELENG_BOT_APP_ID }}"
           private-key: "${{ secrets.LF_RELENG_BOT_PRIVATE_KEY }}"
+          # Scope the token to the permissions this workflow needs; without
+          # this the token inherits the App's blanket installation permissions
+          permission-contents: 'write'
+          permission-pull-requests: 'write'
+          permission-issues: 'write'
 
       - name: 'List existing pull requests 📋'
         env:
