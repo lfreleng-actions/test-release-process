@@ -26,11 +26,22 @@ runs:
       run: |
         # Write the date to a file 📆
         date=$(date +"%Y %B %d %R %Z")
+        short_date=$(date +"%Y-%m-%d")
+        year=$(date +"%Y")
         echo "date=$date" >> "$GITHUB_OUTPUT"
+        echo "short_date=$short_date" >> "$GITHUB_OUTPUT"
         echo "Writing date to file: $date > date.txt"
         # Output inline but also output to step summary for clarity
         echo "Writing date to file: $date > date.txt" >> "$GITHUB_STEP_SUMMARY"
-        echo "$date" > date.txt
+        # SPDX tags keep the generated file REUSE compliant
+        # REUSE-IgnoreStart
+        {
+          echo "# SPDX-License-Identifier: Apache-2.0"
+          echo "# SPDX-FileCopyrightText: $year The Linux Foundation"
+          echo ""
+          echo "$date"
+        } > date.txt
+        # REUSE-IgnoreEnd
 
     - name: 'Detect change 🔍'
       id: detect
@@ -55,12 +66,15 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
       with:
         token: ${{ inputs.token }}
-        commit-message: ${{ steps.date.outputs.date }}
+        # Conventional commit type keeps gitlint and the semantic pull
+        # request check happy; short date keeps the subject within 50 chars
+        # yamllint disable-line rule:line-length
+        commit-message: "Chore: Update date stamp ${{ steps.date.outputs.short_date }}"
         signoff: 'true'
         sign-commits: 'true'
         branch: automated-pr
         delete-branch: true
-        title: ${{ steps.date.outputs.date }}
+        title: "Chore: Update date stamp ${{ steps.date.outputs.short_date }}"
         body: |
           ## Pull Request/Update Summary
           ${{ steps.date.outputs.date }} > date.txt
