@@ -30,13 +30,17 @@ Verifies and demonstrates the release automation used across the
    updates) a pull request via the local composite action (`action.yaml`).
 2. **Release Drafter** (`release-drafter.yaml`) — on every push to `main`,
    updates the draft release notes.
-3. **Release on Tag Push** (`tag-push.yaml`) — on a tag push, validates the
-   tag then promotes the associated draft release.
+3. **Release on Tag Push** (`release.yaml`) — on a tag push, delegates to
+   the reusable release workflow in
+   [generic-workflows][generic-workflows], which validates the tag then
+   promotes the associated draft release.
 
 ## Notes
 
 While exercising the release process, this repository tests the following
-actions:
+actions. The tag validation and draft promotion now run inside the
+[generic-workflows][generic-workflows] release reusable rather than from
+jobs defined here, so this repository also exercises that reusable:
 
 - [lfreleng-actions/tag-validate-action][tag-validate] — unified tag
   validation (versioning scheme plus SSH/GPG signature verification, and
@@ -83,6 +87,7 @@ works where the organisation permits Actions to create pull requests.
 
 [tag-validate]: https://github.com/lfreleng-actions/tag-validate-action
 [promote]: https://github.com/lfreleng-actions/draft-release-promote-action
+[generic-workflows]: https://github.com/lfreleng-actions/generic-workflows
 [drafter]: https://github.com/release-drafter/release-drafter
 [cpr]: https://github.com/peter-evans/create-pull-request
 [harden]: https://github.com/step-security/harden-runner
