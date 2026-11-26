@@ -13,6 +13,11 @@ on:
 
 permissions: {}
 
+# Turn off GitHub CLI telemetry: steps below run 'gh', which
+# otherwise posts usage events to cafe.github.com.
+env:
+  GH_TELEMETRY: 'false'
+
 concurrency:
   group: "${{ github.workflow }}-${{ github.ref }}"
   cancel-in-progress: true
